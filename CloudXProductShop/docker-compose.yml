@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  server:
+    image: pmi/cloudx_product_shop:latest
+    container_name: cloudx_product_shop
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: ./CloudXProductShop/Dockerfile
+    ports:
+      - '5000:5000'
