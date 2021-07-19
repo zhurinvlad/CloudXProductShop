@@ -23,59 +23,54 @@ pipeline {
     }
 
     stages {
-		stage('Clone repository') {
+    stage('Clone repository') {
             steps {
                 git branch: "main", url: "https://github.com/zhurinvlad/CloudXProductShop.git"
             }
         }
-		stage('Tests')
-		{
-			steps {
+    stage('Tests')
+    {
+      steps {
                 sh 'echo tests'
-			}
-		}
-		stage('Build image') {
-			steps {
-				sh 'docker build -t ${IMAGE_NAME} -f ./CloudXProductShop/CloudXProductShop/Dockerfile .'
-			}
-		} 
+      }
+    }
+    stage('Build image') {
+      steps {
+            sh 'cd CloudXProductShop && docker build -t ${IMAGE_NAME} -f ./CloudXProductShop/Dockerfile .'
+      }
+    } 
 
-        stage('Push image') {
-			steps {
-				script {
-					docker.withRegistry('${AWS_URL}', 'ecr:${AWS_ECR_REGION}:jenkins-ecr') {
-						docker.image('${IMAGE_NAME}').push("v${env.BUILD_NUMBER}")
-						docker.image('${IMAGE_NAME}').push('latest')
-					}
-				}
-			}
-		}
-		// stage('Run instance')
-		// {
-		// 	steps {
-		// 		//  sh 'sed -e "s;%BUILD_NUMBER%;${BUILD_NUMBER};g" ${TASK_NAME}.json >  ${TASK_NAME}-v${BUILD_NUMBER}.json'
-		// 		//  sh 'aws ecs register-task-definition --family {TASK_NAME} --cli-input-json file://${TASK_NAME}-v${BUILD_NUMBER}.json --region ${AWS_ECR_REGION}'
-		// 		// sh '''	
-		// 		// 	TASK_REVISION=`aws ecs describe-task-definition --task-definition ${TASK_NAME} --region ${AWS_ECR_REGION} | jq .taskDefinition.revision`
-		// 		// 	SERVICES=`aws ecs describe-services --services ${SERVICE_NAME} --cluster ${CLUSTER_NAME} --region ${AWS_ECR_REGION} | jq '.services[] | length'`
-		// 		// 	if [ $SERVICES == "" ]; then 
-		// 		// 		aws ecs create-service --cluster ${CLUSTER_NAME} --region ${AWS_ECR_REGION} --service ${SERVICE_NAME} --task-definition ${TASK_NAME}:${TASK_REVISION} --desired-count 1 
-		// 		// 	else 
-		// 		// 		aws ecs update-service --cluster ${CLUSTER_NAME} --service ${SERVICE_NAME} --task-definition ${TASK_NAME}:${TASK_REVISION} --desired-count 1 --region ${AWS_ECR_REGION}
-		// 		// 	fi
-		// 		// '''
-		// 	}
-		// }
-		stage('Clean up')
-		{		
-			steps {
-				sh 'docker image prune -a -f'
-				deleteDir()
-				script {
-					currentBuild.result = 'SUCCESS'
-				}
-			}
-		}
+    stage('Push image') {
+      steps {
+        script {
+          docker.withRegistry('https://515001955773.dkr.ecr.us-east-2.amazonaws.com', 'ecr:us-east-2:jenkins-ecr') {
+            docker.image('515001955773.dkr.ecr.us-east-2.amazonaws.com/cloudx-products').push("v${env.BUILD_NUMBER}")
+            docker.image('515001955773.dkr.ecr.us-east-2.amazonaws.com/cloudx-products').push('latest')
+          }
+        }
+      }
+    }
+    stage('Run instance')
+    {
+        //  sh 'sed -e "s;%BUILD_NUMBER%;${BUILD_NUMBER};g" ${TASK_NAME}.json >  ${TASK_NAME}-v${BUILD_NUMBER}.json'
+        //  sh 'aws ecs register-task-definition --cli-input-json file://${TASK_NAME}-v${BUILD_NUMBER}.json --region ${AWS_ECR_REGION}'
+      steps {
+         sh '''  
+            TASK_REVISION=`aws ecs describe-task-definition --task-definition ${TASK_NAME} --region ${AWS_ECR_REGION} | egrep "revision" | tr "/" " " | awk '{print $2}' | sed 's/"$//'`
+            aws ecs update-service --cluster ${CLUSTER_NAME} --service ${SERVICE_NAME} --task-definition ${TASK_NAME}:1 --desired-count 1 --region ${AWS_ECR_REGION}
+        '''
+      }
+    }
+    stage('Clean up')
+    {    
+      steps {
+        sh 'docker image prune -a -f'
+        deleteDir()
+        script {
+          currentBuild.result = 'SUCCESS'
+        }
+      }
+    }
     }
 
     post {
