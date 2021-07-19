@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CloudXProductShop.DAL;
+using Microsoft.VisualBasic;
 
 namespace CloudXProductShop.Controllers
 {
@@ -25,6 +26,16 @@ namespace CloudXProductShop.Controllers
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
             return await _context.Products.ToListAsync();
+        }
+
+        // GET: api/Products
+        [HttpGet("test")]
+        public async Task<ActionResult<IEnumerable<Product>>> GetProductsTest()
+        {
+            return Ok( new
+            {
+                Message="It works!"
+            });
         }
 
         // GET: api/Products/5
