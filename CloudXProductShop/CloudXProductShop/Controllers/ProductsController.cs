@@ -42,6 +42,16 @@ namespace CloudXProductShop.Controllers
             });
         }
 
+        // GET: api/Products
+        [HttpGet("test2")]
+        public async Task<ActionResult<IEnumerable<Product>>> GetProductsTest2()
+        {
+            _logger.LogInformation("It works 2!");
+            return Ok(new
+            {
+                Message = "It works 2!"
+            });
+        }
         // GET: api/Products/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Product>> GetProduct(int id)
