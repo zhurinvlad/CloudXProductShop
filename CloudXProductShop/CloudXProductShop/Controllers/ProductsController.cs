@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CloudXProductShop.DAL;
 using Microsoft.VisualBasic;
+using Microsoft.Extensions.Logging;
 
 namespace CloudXProductShop.Controllers
 {
@@ -15,10 +16,12 @@ namespace CloudXProductShop.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly ProductShopContext _context;
+        private readonly ILogger<ProductsController> _logger;
 
-        public ProductsController(ProductShopContext context)
+        public ProductsController(ProductShopContext context, ILogger<ProductsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/Products
@@ -32,6 +35,7 @@ namespace CloudXProductShop.Controllers
         [HttpGet("test")]
         public async Task<ActionResult<IEnumerable<Product>>> GetProductsTest()
         {
+            _logger.LogInformation("It works!");
             return Ok( new
             {
                 Message="It works!"
