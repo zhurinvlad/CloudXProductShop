@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Amazon.XRay.Recorder.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +36,7 @@ namespace CloudXProductShop.Controllers
         [HttpGet("test")]
         public async Task<ActionResult<IEnumerable<Product>>> GetProductsTest()
         {
-            _logger.LogInformation("It works!");
+            AWSXRayRecorder.Instance.TraceMethod("Test xRay", () => _logger.LogInformation("It works!"));
             return Ok( new
             {
                 Message="It works!"

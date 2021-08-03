@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace CloudXProductShop
 {
@@ -20,7 +21,6 @@ namespace CloudXProductShop
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            AWSXRayRecorder.InitializeInstance(configuration: Configuration); // Inititalizing Configuration object with X-Ray recorder
             AWSSDKHandler.RegisterXRayForAllServices(); // All AWS SDK requests will be traced
         }
 
@@ -50,7 +50,6 @@ namespace CloudXProductShop
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
                 app.UseXRay("CloudXProductShop"); // name of the app
-
 
             }
             app.UseHttpsRedirection();
