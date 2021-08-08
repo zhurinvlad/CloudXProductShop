@@ -21,7 +21,7 @@ namespace CloudXProductShop
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            AWSSDKHandler.RegisterXRayForAllServices(); // All AWS SDK requests will be traced
+            //AWSSDKHandler.RegisterXRayForAllServices(); // All AWS SDK requests will be traced
         }
 
         public IConfiguration Configuration { get; }
@@ -31,9 +31,13 @@ namespace CloudXProductShop
         {
             services.AddControllersWithViews();
 
+            var secretConnctionString = AWSSecretManager.GetRDSSecret();
             services.AddDbContext<ProductShopContext>(options =>
             {
-                options.UseSqlite(@"Data Source=ProductShop.db");
+                options
+                    .UseMySql(secretConnctionString, new MySqlServerVersion(new Version(8, 0, 25)))
+                    .EnableSensitiveDataLogging() // <-- These two calls are optional but help
+                    .EnableDetailedErrors(); // <-- with debugging (remove for production).
             });
         }
 
@@ -49,7 +53,7 @@ namespace CloudXProductShop
                 app.UseExceptionHandler("/Home/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
-                app.UseXRay("CloudXProductShop"); // name of the app
+                //app.UseXRay("CloudXProductShop"); // name of the app
 
             }
             app.UseHttpsRedirection();
