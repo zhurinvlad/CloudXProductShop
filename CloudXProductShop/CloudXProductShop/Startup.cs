@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Amazon.Runtime;
+using Amazon.SQS;
 using Amazon.XRay.Recorder.Core;
 using Amazon.XRay.Recorder.Handlers.AwsSdk;
 using CloudXProductShop.DAL;
@@ -29,9 +31,15 @@ namespace CloudXProductShop
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
-
-            var secretConnctionString = AWSSecretManager.GetRDSSecret();
+            services.AddControllersWithViews()
+                .AddNewtonsoftJson(options =>
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            );
+            var options = Configuration.GetAWSOptions();
+            options.Credentials = new BasicAWSCredentials(Configuration.GetValue<string>("AWS_ACCESS_KEY_ID"), Configuration.GetValue<string>("AWS_SECRET_ACCESS_KEY"));
+            services.AddDefaultAWSOptions(options);
+            services.AddAWSService<IAmazonSQS>();
+            var secretConnctionString = AWSSecretManager.GetRDSSecret(options.Credentials);
             services.AddDbContext<ProductShopContext>(options =>
             {
                 options

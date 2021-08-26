@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.XRay.Recorder.Core;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using CloudXProductShop.DAL;
 using Microsoft.VisualBasic;
 using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 
 namespace CloudXProductShop.Controllers
 {
@@ -18,7 +20,7 @@ namespace CloudXProductShop.Controllers
     {
         private readonly ProductShopContext _context;
         private readonly ILogger<ProductsController> _logger;
-
+        private readonly string CACHE_KEY = "list-products";
         public ProductsController(ProductShopContext context, ILogger<ProductsController> logger)
         {
             _context = context;
@@ -29,7 +31,21 @@ namespace CloudXProductShop.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
-            return await _context.Products.ToListAsync();
+            //var db = getCacheDb();
+            //var cacheProducts = db.StringGet(CACHE_KEY);
+
+            IEnumerable<Product> products = null;
+
+            //if (cacheProducts.IsNullOrEmpty)
+            //{
+                products = await _context.Products.ToListAsync();
+            //    db.StringSet(CACHE_KEY, JsonSerializer.Serialize(products));
+            //}
+            //else
+            //{
+                //products = JsonSerializer.Deserialize<IEnumerable<Product>>(cacheProducts);
+            //}
+            return Ok(products);
         }
 
         // GET: api/Products
@@ -108,6 +124,8 @@ namespace CloudXProductShop.Controllers
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
+            var db = getCacheDb();
+            db.KeyDelete(CACHE_KEY);
             return CreatedAtAction(nameof(GetProduct), new { id = product.ProductId }, product);
         }
 
@@ -130,6 +148,13 @@ namespace CloudXProductShop.Controllers
         private bool ProductExists(int id)
         {
             return _context.Products.Any(e => e.ProductId == id);
+        }
+
+        private IDatabase getCacheDb()
+        {
+            var cacheEndPoint = "localhost:6379"; // TODO
+            var redis = ConnectionMultiplexer.Connect(cacheEndPoint);
+            return redis.GetDatabase();
         }
     }
 }

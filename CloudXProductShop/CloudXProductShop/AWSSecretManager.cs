@@ -7,23 +7,20 @@ using Amazon;
 using Amazon.Runtime;
 using Amazon.SecretsManager;
 using Amazon.SecretsManager.Model;
-using MySqlConnector;
 using Newtonsoft.Json.Linq;
 
 namespace CloudXProductShop
 {
     public class AWSSecretManager
     {
-        public static string GetRDSSecret()
+        public static string GetRDSSecret(AWSCredentials awsCredentials)
         {
             string secretName = "Cloudx/MySql";
             string region = "us-east-2";
             string secret = "";
 
             MemoryStream memoryStream = new MemoryStream();
-            //var awsCredentials = new Amazon.Runtime.BasicAWSCredentials("", "");
-            //IAmazonSecretsManager client = new AmazonSecretsManagerClient(awsCredentials, RegionEndpoint.GetBySystemName(region));
-            IAmazonSecretsManager client = new AmazonSecretsManagerClient(RegionEndpoint.GetBySystemName(region));
+            IAmazonSecretsManager client = new AmazonSecretsManagerClient(awsCredentials, RegionEndpoint.GetBySystemName(region));
 
             GetSecretValueRequest request = new GetSecretValueRequest();
             request.SecretId = secretName;
